@@ -16,7 +16,7 @@
 		
 		public function grab(){
 			include_once(EXTENSIONS . '/recaptcha/extension.driver.php');
-			$driver = $this->_Parent->ExtensionManager->create('recaptcha');
+			$driver = Symphony::ExtensionManager()->create('recaptcha');
 			return new XMLElement('recaptcha', $driver->getPublicKey());
 		}		
 		

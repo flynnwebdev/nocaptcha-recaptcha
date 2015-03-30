@@ -64,11 +64,13 @@
 
 			$div = new XMLElement('div', NULL, array('class' => 'group'));
 			$label = Widget::Label('Public Key');
-			$label->appendChild(Widget::Input('settings[recaptcha][public-key]', General::Sanitize($this->_Parent->Configuration->get('public-key', 'recaptcha'))));		
+			$pub_key = General::Sanitize(Symphony::Configuration()->get('public-key', 'recaptcha'));
+			$priv_key = General::Sanitize(Symphony::Configuration()->get('private-key', 'recaptcha'));
+			$label->appendChild(Widget::Input('settings[recaptcha][public-key]', $pub_key));		
 			$div->appendChild($label);
 
 			$label = Widget::Label('Private Key');
-			$label->appendChild(Widget::Input('settings[recaptcha][private-key]', General::Sanitize($this->_Parent->Configuration->get('private-key', 'recaptcha'))));		
+			$label->appendChild(Widget::Input('settings[recaptcha][private-key]', $priv_key));		
 			$div->appendChild($label);
 			
 			$group->appendChild($div);
@@ -96,33 +98,37 @@
 		
 		public function processEventData($context){
 
+			//print_r($context['event']->eParamFILTERS); die();
+
 			if(!in_array('recaptcha', $context['event']->eParamFILTERS)) return;
-			
+
+			//echo $this->getPrivateKey();
+						
+			//print_r($_POST); die();
 			
 			include_once(EXTENSIONS . '/recaptcha/lib/recaptchalib.php');
-			$resp = recaptcha_check_answer($this->getPrivateKey(),
+			$resp = recaptcha_check_answer($this->getPrivateKey(), 
 			                                $_SERVER['REMOTE_ADDR'],
-			                                $_POST['recaptcha_challenge_field'],
-			                                $_POST['recaptcha_response_field']);
+			                                $_POST['g-recaptcha-response']);
 
-			$context['messages'][] = array('recaptcha', $resp->is_valid, (!$resp->is_valid ? 'Challenge words entered were invalid.' : NULL));
+			$context['messages'][] = array('recaptcha', $resp->is_valid, (!$resp->is_valid ? 'Recaptcha is invalid.' : NULL));
 
 		}
 		
 		public function uninstall(){
 			//ConfigurationAccessor::remove('recaptcha');	
-			$this->_Parent->Configuration->remove('recaptcha');
-			$this->_Parent->saveConfig();
+			Symphony::Configuration()->remove('recaptcha');
+			//$this->_Parent->saveConfig();
 		}
 
 		public function getPublicKey(){
 			//return ConfigurationAccessor::get('public-key', 'recaptcha');
-			return $this->_Parent->Configuration->get('public-key', 'recaptcha');
+			return Symphony::Configuration()->get('public-key', 'recaptcha');
 		}	
 		
 		public function getPrivateKey(){
 			//return ConfigurationAccessor::get('private-key', 'recaptcha');
-			return $this->_Parent->Configuration->get('private-key', 'recaptcha');
+			return Symphony::Configuration()->get('private-key', 'recaptcha');
 		}			
 		
 	}
